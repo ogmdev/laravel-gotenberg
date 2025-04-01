@@ -176,8 +176,8 @@ class PdfBuilder implements Responsable
         float $left = 0,
         Unit|string $unit = 'in'
     ): self {
-        if ($unit instanceof Unit) {
-            $unit = $unit->value;
+        if (!$unit instanceof Unit) {
+            $unit = Unit::from($unit);
         }
 
         $this->margins = compact(
@@ -354,7 +354,10 @@ class PdfBuilder implements Responsable
         }
 
         if ($this->paperSize) {
-            $generator->paperSize(...$this->paperSize);
+            $generator->paperSize(
+                width:  $this->paperSize['width']  . $this->paperSize['unit'],
+                height: $this->paperSize['height'] . $this->paperSize['unit'],
+            );
         }
 
         if ($this->orientation === Orientation::Landscape->value) {
