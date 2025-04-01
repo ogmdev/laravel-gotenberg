@@ -5,7 +5,10 @@
 [![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/safermobility/laravel-gotenberg/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/safermobility/laravel-gotenberg/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/safermobility/laravel-gotenberg.svg?style=flat-square)](https://packagist.org/packages/safermobility/laravel-gotenberg)
 
-This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
+This package provides a simple way to create PDFs in Laravel apps. Under the hood it uses [Gotenberg](https://gotenberg.dev) to generate PDFs from Blade views. You can use modern CSS features like grid and flexbox to create beautiful PDFs.
+
+This package is very heavily based on Spatie's [laravel-pdf](https://github.com/spatie/laravel-pdf) package, but does not require Node.js to run, making
+it more suitable for applications that run in containers.
 
 ## Installation
 
@@ -13,13 +16,6 @@ You can install the package via composer:
 
 ```bash
 composer require safermobility/laravel-gotenberg
-```
-
-You can publish and run the migrations with:
-
-```bash
-php artisan vendor:publish --tag="laravel-gotenberg-migrations"
-php artisan migrate
 ```
 
 You can publish the config file with:
@@ -32,21 +28,51 @@ This is the contents of the published config file:
 
 ```php
 return [
+    'host' => env('GOTENBERG_HOST'),
 ];
-```
-
-Optionally, you can publish the views using
-
-```bash
-php artisan vendor:publish --tag="laravel-gotenberg-views"
 ```
 
 ## Usage
 
-```php
-$laravelGotenberg = new SaferMobility\LaravelGotenberg();
-echo $laravelGotenberg->echoPhrase('Hello, SaferMobility!');
+You must have a working Gotenberg instance.
+
+For development, you may be able to use the Gotenberg Demo server:
+
+```env
+GOTENBERG_HOST=https://demo.gotenberg.dev
 ```
+
+For production, you must set up your own Gotenberg instance.
+
+### Simple PDF generation
+
+```php
+use SaferMobility\LaravelGotenberg\Facades\Gotenberg;
+
+Gotenberg::view('pdfs.invoice', ['invoice' => $invoice])
+    ->format('letter')
+    ->save('invoice.pdf')
+```
+
+This will render the Blade view `pdfs.invoice` with the given data and save it as a PDF file.
+
+You can also return the PDF as a response from your controller:
+
+```php
+use SaferMobility\LaravelGotenberg\Facades\Gotenberg;
+
+class DownloadInvoiceController
+{
+    public function __invoke(Invoice $invoice)
+    {
+        return Gotenberg::view('pdfs.invoice', ['invoice' => $invoice])
+            ->format('letter')
+            ->name('your-invoice.pdf');
+    }
+}
+```
+
+This will use a streamed response to reduce memory usage.
 
 ## Testing
 
@@ -62,14 +88,10 @@ Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed re
 
 Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 
-## Security Vulnerabilities
-
-Please review [our security policy](../../security/policy) on how to report security vulnerabilities.
-
 ## Credits
 
 - [SaferMobility](https://github.com/safermobility)
-- [All Contributors](../../contributors)
+- [Spatie](https://github.com/spatie) - for their Laravel PDF package, and many others
 
 ## License
 
