@@ -176,7 +176,7 @@ class PdfBuilder implements Responsable
         float $left = 0,
         Unit|string $unit = 'in'
     ): self {
-        if (!$unit instanceof Unit) {
+        if (! $unit instanceof Unit) {
             $unit = Unit::from($unit);
         }
 
@@ -355,8 +355,8 @@ class PdfBuilder implements Responsable
 
         if ($this->paperSize) {
             $generator->paperSize(
-                width:  $this->paperSize['width']  . $this->paperSize['unit'],
-                height: $this->paperSize['height'] . $this->paperSize['unit'],
+                width: $this->paperSize['width'].$this->paperSize['unit'],
+                height: $this->paperSize['height'].$this->paperSize['unit'],
             );
         }
 
