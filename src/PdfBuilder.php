@@ -164,7 +164,7 @@ class PdfBuilder implements Responsable
 
     public function base64(): string
     {
-        $content = Http::post($this->getGenerator())->body();
+        $content = Http::buildClient()->sendRequest($this->getGenerator())->getBody();
 
         return base64_encode($content);
     }
@@ -237,7 +237,7 @@ class PdfBuilder implements Responsable
             return $this->saveOnDisk($this->diskName, $path);
         }
 
-        $response = Http::post($this->getGenerator())->resource();
+        $response = Http::buildClient()->sendRequest($this->getGenerator())->getBody();
 
         $file = fopen($path, 'w');
         if ($file === false) {
@@ -269,7 +269,7 @@ class PdfBuilder implements Responsable
 
     protected function saveOnDisk(string $diskName, string $path): self
     {
-        $content = Http::post($this->getGenerator())->toPsrResponse()->getBody();
+        $content = Http::buildClient()->sendRequest($this->getGenerator())->getBody();
 
         $visibility = $this->visibility;
 
@@ -373,7 +373,7 @@ class PdfBuilder implements Responsable
 
     public function toResponse($request): StreamedResponse
     {
-        $stream = Http::post($this->getGenerator())->toPsrResponse()->getBody();
+        $stream = Http::buildClient()->sendRequest($this->getGenerator())->getBody();
 
         // Partially based on https://github.com/laravel/framework/discussions/49991
         return response()->streamDownload(
