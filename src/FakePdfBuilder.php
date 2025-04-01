@@ -31,7 +31,7 @@ class FakePdfBuilder extends PdfBuilder
     {
         $this->respondedWithPdf[] = clone $this;
 
-        return new StreamedResponse();
+        return new StreamedResponse;
     }
 
     public function assertViewIs(string $viewName): void

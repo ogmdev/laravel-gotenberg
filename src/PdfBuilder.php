@@ -193,7 +193,7 @@ class PdfBuilder implements Responsable
 
     public function format(string|Format $format): self
     {
-        if (!$format instanceof Format) {
+        if (! $format instanceof Format) {
             $format = Format::from($format);
         }
 
@@ -245,7 +245,7 @@ class PdfBuilder implements Responsable
         }
 
         // Streaming for large files, instead of loading the whole thing into memory
-        while (!feof($response)) {
+        while (! feof($response)) {
             $chunk = fread($response, 1024 * 512); // read up to 0.5 MiB at a time
             if (fwrite($file, $chunk) === false) {
                 throw NativeFunctionErrored::createFromLastPhpError();
@@ -346,10 +346,10 @@ class PdfBuilder implements Responsable
 
         if ($this->margins) {
             $generator->margins(
-                top:    $this->margins['top']    . $this->margins['unit'],
-                bottom: $this->margins['bottom'] . $this->margins['unit'],
-                left:   $this->margins['left']   . $this->margins['unit'],
-                right:  $this->margins['right']  . $this->margins['unit'],
+                top: $this->margins['top'].$this->margins['unit'],
+                bottom: $this->margins['bottom'].$this->margins['unit'],
+                left: $this->margins['left'].$this->margins['unit'],
+                right: $this->margins['right'].$this->margins['unit'],
             );
         }
 
@@ -375,7 +375,7 @@ class PdfBuilder implements Responsable
         // Partially based on https://github.com/laravel/framework/discussions/49991
         return response()->streamDownload(
             function () use ($stream) {
-                while (!feof($stream)) {
+                while (! feof($stream)) {
                     echo $stream->read(1024 * 512); // 0.5 MiB chunks
                 }
                 $stream->close();
