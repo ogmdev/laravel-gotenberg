@@ -19,17 +19,17 @@ enum Format: string
     public function pageSize(): array
     {
         return match ($this) {
-            Format::Letter  => [8.5,   11, 'in'],
-            Format::Legal   => [8.5,   14, 'in'],
-            Format::Tabloid => [ 11,   17, 'in'],
-            Format::Ledger  => [ 17,   11, 'in'],
-            Format::A0      => [841, 1189, 'mm'],
-            Format::A1      => [594,  841, 'mm'],
-            Format::A2      => [420,  594, 'mm'],
-            Format::A3      => [297,  420, 'mm'],
-            Format::A4      => [210,  297, 'mm'],
-            Format::A5      => [148,  210, 'mm'],
-            Format::A6      => [105,  148, 'mm'],
+            Format::Letter  => ['width' => 8.5, 'height' =>   11, 'unit' => 'in'],
+            Format::Legal   => ['width' => 8.5, 'height' =>   14, 'unit' => 'in'],
+            Format::Tabloid => ['width' =>  11, 'height' =>   17, 'unit' => 'in'],
+            Format::Ledger  => ['width' =>  17, 'height' =>   11, 'unit' => 'in'],
+            Format::A0      => ['width' => 841, 'height' => 1189, 'unit' => 'mm'],
+            Format::A1      => ['width' => 594, 'height' =>  841, 'unit' => 'mm'],
+            Format::A2      => ['width' => 420, 'height' =>  594, 'unit' => 'mm'],
+            Format::A3      => ['width' => 297, 'height' =>  420, 'unit' => 'mm'],
+            Format::A4      => ['width' => 210, 'height' =>  297, 'unit' => 'mm'],
+            Format::A5      => ['width' => 148, 'height' =>  210, 'unit' => 'mm'],
+            Format::A6      => ['width' => 105, 'height' =>  148, 'unit' => 'mm'],
         };
     }
 }
