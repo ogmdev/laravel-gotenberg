@@ -3,20 +3,20 @@
 namespace SaferMobility\LaravelGotenberg;
 
 use Closure;
-use Gotenberg\Exceptions\NativeFunctionErrored;
-use Gotenberg\Modules\ChromiumPdf;
-use Gotenberg\Stream;
 use Illuminate\Contracts\Support\Responsable;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
-use Psr\Http\Message\RequestInterface;
 use SaferMobility\LaravelGotenberg\Enums\Format;
 use SaferMobility\LaravelGotenberg\Enums\Orientation;
 use SaferMobility\LaravelGotenberg\Enums\Unit;
+use SaferMobility\LaravelGotenberg\Exceptions\NativeFunctionErrored;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PdfBuilder implements Responsable
 {
+    public const ENDPOINT_URL = '/forms/chromium/convert/html';
+
     public string $viewName = '';
 
     public array $viewData = [];
@@ -47,7 +47,7 @@ class PdfBuilder implements Responsable
 
     protected string $visibility = 'private';
 
-    protected ?Closure $customizeGenerator = null;
+    protected ?Closure $customizeRequest = null;
 
     protected array $responseHeaders = [
         'Content-Type' => 'application/pdf',
@@ -164,7 +164,7 @@ class PdfBuilder implements Responsable
 
     public function base64(): string
     {
-        $content = Http::buildClient()->sendRequest($this->getGenerator())->getBody();
+        $content = $this->doRequest()->getBody();
 
         return base64_encode($content);
     }
@@ -219,7 +219,7 @@ class PdfBuilder implements Responsable
 
     public function customize(callable $callback): self
     {
-        $this->customizeGenerator = $callback;
+        $this->customizeRequest = $callback;
 
         return $this;
     }
@@ -237,7 +237,7 @@ class PdfBuilder implements Responsable
             return $this->saveOnDisk($this->diskName, $path);
         }
 
-        $response = Http::buildClient()->sendRequest($this->getGenerator())->getBody();
+        $response = $this->doRequest()->getBody();
 
         $file = fopen($path, 'w');
         if ($file === false) {
@@ -269,7 +269,7 @@ class PdfBuilder implements Responsable
 
     protected function saveOnDisk(string $diskName, string $path): self
     {
-        $content = Http::buildClient()->sendRequest($this->getGenerator())->getBody();
+        $content = $this->doRequest()->getBody();
 
         $visibility = $this->visibility;
 
@@ -326,54 +326,48 @@ class PdfBuilder implements Responsable
         ]);
     }
 
-    public function getGenerator(): RequestInterface
+    public function doRequest(): Response
     {
-        $generator = new ChromiumPdf(config('gotenberg.host'));
+        $request = Http::baseUrl(config('gotenberg.host'));
 
-        $generator->printBackground();
+        $postData = [
+            'printBackground' => true,
+        ];
 
-        $headerHtml = $this->getHeaderHtml();
-
-        $footerHtml = $this->getFooterHtml();
-
-        if ($headerHtml) {
-            $generator->header(Stream::string('', $headerHtml));
+        if ($headerHtml = $this->getHeaderHtml()) {
+            $request->attach('header', $headerHtml, 'header.html');
         }
 
-        if ($footerHtml) {
-            $generator->footer(Stream::string('', $footerHtml));
+        if ($footerHtml = $this->getFooterHtml()) {
+            $request->attach('footer', $footerHtml, 'footer.html');
         }
 
         if ($this->margins) {
-            $generator->margins(
-                top: $this->margins['top'].$this->margins['unit'],
-                bottom: $this->margins['bottom'].$this->margins['unit'],
-                left: $this->margins['left'].$this->margins['unit'],
-                right: $this->margins['right'].$this->margins['unit'],
-            );
+            $postData['marginTop'] = $this->margins['top'].$this->margins['unit'];
+            $postData['marginBottom'] = $this->margins['bottom'].$this->margins['unit'];
+            $postData['marginLeft'] = $this->margins['left'].$this->margins['unit'];
+            $postData['marginRight'] = $this->margins['right'].$this->margins['unit'];
         }
 
         if ($this->paperSize) {
-            $generator->paperSize(
-                width: $this->paperSize['width'].$this->paperSize['unit'],
-                height: $this->paperSize['height'].$this->paperSize['unit'],
-            );
+            $postData['paperWidth'] = $this->paperSize['width'].$this->paperSize['unit'];
+            $postData['paperHeight'] = $this->paperSize['height'].$this->paperSize['unit'];
         }
 
-        if ($this->orientation === Orientation::Landscape->value) {
-            $generator->landscape();
+        $postData['landscape'] = $this->orientation === Orientation::Landscape->value;
+
+        $request->attach('index', $this->getHtml(), 'index.html');
+
+        if ($this->customizeRequest) {
+            ($this->customizeRequest)($request);
         }
 
-        if ($this->customizeGenerator) {
-            ($this->customizeGenerator)($generator);
-        }
-
-        return $generator->html(Stream::string('', $this->getHtml()));
+        return $request->post(static::ENDPOINT_URL, $postData);
     }
 
     public function toResponse($request): StreamedResponse
     {
-        $stream = Http::buildClient()->sendRequest($this->getGenerator())->getBody();
+        $stream = $this->doRequest()->getBody();
 
         // Partially based on https://github.com/laravel/framework/discussions/49991
         return response()->streamDownload(
