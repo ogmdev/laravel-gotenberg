@@ -21,7 +21,7 @@ composer require safermobility/laravel-gotenberg
 You can publish the config file with:
 
 ```bash
-php artisan vendor:publish --tag="laravel-gotenberg-config"
+php artisan vendor:publish --tag="gotenberg-config"
 ```
 
 This is the contents of the published config file:
