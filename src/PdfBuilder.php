@@ -372,7 +372,7 @@ class PdfBuilder implements Responsable
         // Partially based on https://github.com/laravel/framework/discussions/49991
         return response()->streamDownload(
             function () use ($stream) {
-                while (! feof($stream)) {
+                while (! $stream->eof()) {
                     echo $stream->read(1024 * 512); // 0.5 MiB chunks
                 }
                 $stream->close();
