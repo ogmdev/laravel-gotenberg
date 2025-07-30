@@ -45,6 +45,8 @@ class PdfBuilder implements Responsable
 
     public ?array $margins = null;
 
+    public ?float $scale = null;
+
     protected string $visibility = 'private';
 
     protected ?Closure $customizeRequest = null;
@@ -188,6 +190,12 @@ class PdfBuilder implements Responsable
             'unit',
         );
 
+        return $this;
+    }
+
+    public function scale(float $scale): self
+    {
+        $this->scale = $scale;
         return $this;
     }
 
@@ -355,6 +363,9 @@ class PdfBuilder implements Responsable
         }
 
         $postData['landscape'] = $this->orientation === Orientation::Landscape->value;
+        if($this->scale) {
+            $postData['scale'] = $this->scale;
+        }
 
         $request->attach('index', $this->getHtml(), 'index.html');
 
