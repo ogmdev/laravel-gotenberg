@@ -176,8 +176,8 @@ class PdfBuilder implements Responsable
         float $left = 0,
         Unit|string $unit = 'in'
     ): self {
-        if (! $unit instanceof Unit) {
-            $unit = Unit::from($unit);
+        if ($unit instanceof Unit) {
+            $unit = $unit->value;
         }
 
         $this->margins = compact(
