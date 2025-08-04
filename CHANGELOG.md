@@ -2,6 +2,20 @@
 
 All notable changes to `laravel-gotenberg` will be documented in this file.
 
+## v1.0.2 - 2025-08-04
+
+### What's Changed
+
+* Bump aglipanci/laravel-pint-action from 2.5 to 2.6 by @dependabot[bot] in https://github.com/safermobility/laravel-gotenberg/pull/6
+* Bump stefanzweifel/git-auto-commit-action from 5 to 6 by @dependabot[bot] in https://github.com/safermobility/laravel-gotenberg/pull/5
+* Fix margin() error, add new scale option by @ogmdev in https://github.com/safermobility/laravel-gotenberg/pull/7
+
+### New Contributors
+
+* @ogmdev made their first contribution in https://github.com/safermobility/laravel-gotenberg/pull/7
+
+**Full Changelog**: https://github.com/safermobility/laravel-gotenberg/compare/v1.0.1...v1.0.2
+
 ## v1.0.1 - 2025-06-06
 
 ### What's Changed
